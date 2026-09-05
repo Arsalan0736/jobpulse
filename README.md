@@ -235,7 +235,7 @@ The standalone pipeline stops retrying on invalid credentials or exhausted quota
 - Build the frontend with `npm run build` and serve `frontend/dist` through the chosen hosting platform or web server.
 - For a separate frontend and backend deployment, set `VITE_API_BASE_URL` in `frontend/.env` to the public API URL, such as `https://api.example.com/api`. The default `/api` works when both are served from one domain through a reverse proxy.
 - The included Docker Compose file is a local development setup. Use managed MySQL/MongoDB or a production container setup with persistent volumes and rotated credentials for deployment.
-- Render uses the pinned Python version in `backend/runtime.txt` because the current Gemini dependency stack is not compatible with Python 3.14.
+- Render uses the pinned Python version in `runtime.txt` because the current Gemini dependency stack is not compatible with Python 3.14. If Render still selects 3.14, add `PYTHON_VERSION=3.13.5` in the service environment variables and redeploy with a cleared build cache.
 
 ## License
 
