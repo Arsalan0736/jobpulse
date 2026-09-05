@@ -1,0 +1,342 @@
+{
+  "info": {
+    "name": "JobPulse API",
+    "description": "Complete JobPulse API collection. Auth, jobs, resume upload, saved jobs, analytics. Run 'Register' or 'Login' first to populate {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000/api"},
+    {"key": "token", "value": ""},
+    {"key": "job_id", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (success)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"name\": \"Alice Smith\",\n  \"password\": \"securepass123\",\n  \"password_confirm\": \"securepass123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('token saved:', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register (failure - duplicate email)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"name\": \"Alice Smith\",\n  \"password\": \"securepass123\",\n  \"password_confirm\": \"securepass123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register (failure - mismatched password)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"name\": \"Bob\",\n  \"password\": \"securepass123\",\n  \"password_confirm\": \"DIFFERENT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (success)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"securepass123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (failure - bad password)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"WRONGPASS\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get current user (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "List jobs (paginated, no filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs?page=1&page_size=20",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "20"}
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var json = pm.response.json();",
+                  "  if (json.results && json.results.length > 0) {",
+                  "    pm.collectionVariables.set('job_id', json.results[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List jobs (filter: keyword)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs?q=python&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                {"key": "q", "value": "python"},
+                {"key": "page", "value": "1"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "List jobs (filter: location)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs?location=remote&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                {"key": "location", "value": "remote"},
+                {"key": "page", "value": "1"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "List jobs (filter: seniority=senior)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs?seniority_level=senior",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                {"key": "seniority_level", "value": "senior"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get job detail (success)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/jobs/{{job_id}}"
+          }
+        },
+        {
+          "name": "Get job detail (failure - invalid id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/jobs/not-a-valid-id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resume",
+      "item": [
+        {
+          "name": "Upload resume (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "sample-resume.pdf"
+                }
+              ]
+            },
+            "url": "{{base_url}}/resume/upload"
+          }
+        },
+        {
+          "name": "Upload resume (failure - no file)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "body": {"mode": "formdata", "formdata": []},
+            "url": "{{base_url}}/resume/upload"
+          }
+        },
+        {
+          "name": "Upload resume (failure - not a PDF)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "README.md"
+                }
+              ]
+            },
+            "url": "{{base_url}}/resume/upload"
+          }
+        },
+        {
+          "name": "Upload resume (failure - no auth)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "sample-resume.pdf"
+                }
+              ]
+            },
+            "url": "{{base_url}}/resume/upload"
+          }
+        },
+        {
+          "name": "Get my resumes",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/resume/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Saved Jobs",
+      "item": [
+        {
+          "name": "Save a job",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/jobs/{{job_id}}/save"
+          }
+        },
+        {
+          "name": "Save a job (failure - no auth)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/jobs/{{job_id}}/save"
+          }
+        },
+        {
+          "name": "Get saved jobs (sorted by match_score desc)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/saved-jobs"
+          }
+        },
+        {
+          "name": "Unsave a job",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/jobs/{{job_id}}/unsave"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get trends (skills, locations, seniority, volume)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/analytics/trends"
+          }
+        }
+      ]
+    }
+  ]
+}

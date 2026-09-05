@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+.env.local
+.env.*
+.env.*.local
+!.env.example
+.pytest_cache/
+.mypy_cache/
+
+# Django and local runtime output
+backend/logs/
+*.log
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.*.local
+
+# Local databases, uploads, and coverage output
+*.sqlite3
+*.sqlite3-journal
+backend/media/
+backend/staticfiles/
+frontend/coverage/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Mongo / MySQL data (if running without docker)
+data/
+mysql_data/
+mongo_data/
